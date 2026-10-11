@@ -213,5 +213,22 @@ class GluedHeadings(unittest.TestCase):
         self.assertEqual(R.split_glued_headings([line], new)[0], [line])
 
 
+class NoteMarkers(unittest.TestCase):
+    RULES = ("#rep=[[[=<small><sup>(^^]]]=)</sup></small>"
+             "#rep12={{=<small> <script>ExpandCollapse(false, '*');</script> </small><small>"
+             "#rep13=}}=</small><small>_nbsp;  <script>ExpandCollapseEnd();</script> _nbsp; </small>")
+
+    def test_marker_is_glued_to_its_collapsible_note(self):
+        # וביום השבת: '[[[א]]] {{הערה}}' - the source's space must not reach the book
+        text = source('$ שם\nמחבר\nלבשל [[[א]]] {{הערה}} באור\n', self.RULES)
+        _, lines = E.convert('x.txt', text=text)
+        self.assertEqual(lines[-1]['html'], 'לבשל <small><sup>(א)</sup>הערה</small> באור')
+
+    def test_marker_before_text_keeps_its_space(self):
+        text = source('$ שם\nמחבר\nלבשל [[[א]]] באור\n', self.RULES)
+        _, lines = E.convert('x.txt', text=text)
+        self.assertEqual(lines[-1]['html'], 'לבשל <small><sup>(א)</sup></small> באור')
+
+
 if __name__ == '__main__':
     unittest.main()
